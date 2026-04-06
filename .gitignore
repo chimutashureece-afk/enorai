@@ -1,0 +1,8 @@
+.next
+node_modules
+data/simulation-state.json
+data/snapshots/*.json
+*.log
+.env*
+tsconfig.tsbuildinfo
+tsconfig.typecheck.tsbuildinfo
