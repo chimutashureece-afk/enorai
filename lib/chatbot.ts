@@ -1,5 +1,3 @@
-import { GoogleGenAI } from "@google/genai";
-
 export type ChatMessage = {
   role: "assistant" | "user";
   content: string;
@@ -10,6 +8,16 @@ type ChatResult = {
   riskLevel: "low" | "high";
   suggestions: string[];
   safetyNote?: string;
+};
+
+type OpenAIResponsesApiResult = {
+  output_text?: string;
+  output?: Array<{
+    content?: Array<{
+      type?: string;
+      text?: string;
+    }>;
+  }>;
 };
 
 const CRISIS_PATTERNS = [
@@ -41,22 +49,29 @@ Rules:
 - If there is any mention of self-harm, suicide, abuse, immediate danger, or inability to stay safe, tell the user to contact local emergency services or a crisis line immediately and encourage reaching a trusted person nearby now.
 `.trim();
 
-let client: GoogleGenAI | null = null;
+function getApiKey() {
+  return process.env.OPENAI_API_KEY ?? null;
+}
 
-function getClient() {
-  if (!process.env.GEMINI_API_KEY) {
-    return null;
-  }
-
-  if (!client) {
-    client = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-  }
-
-  return client;
+function getModel() {
+  return process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
 }
 
 function detectRisk(text: string) {
   return CRISIS_PATTERNS.some((pattern) => pattern.test(text));
+}
+
+function extractOpenAIText(response: OpenAIResponsesApiResult) {
+  if (response.output_text?.trim()) {
+    return response.output_text.trim();
+  }
+
+  const firstText = response.output
+    ?.flatMap((item) => item.content ?? [])
+    .find((content) => content.type === "output_text" && typeof content.text === "string")
+    ?.text;
+
+  return firstText?.trim() ?? "";
 }
 
 function buildCrisisResponse(userText: string): ChatResult {
@@ -99,6 +114,35 @@ function buildFallbackResponse(userText: string): ChatResult {
   };
 }
 
+async function generateOpenAIReply(messages: ChatMessage[]) {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    return null;
+  }
+
+  const transcript = messages.map((message) => `${message.role.toUpperCase()}: ${message.content}`).join("\n");
+  const response = await fetch("https://api.openai.com/v1/responses", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: getModel(),
+      instructions: SYSTEM_PROMPT,
+      input: `Conversation:\n${transcript}\n\nRespond to the last USER message only.`,
+      max_output_tokens: 220
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`OpenAI request failed with ${response.status}`);
+  }
+
+  const data = (await response.json()) as OpenAIResponsesApiResult;
+  return extractOpenAIText(data);
+}
+
 export async function generateSupportReply(messages: ChatMessage[]): Promise<ChatResult> {
   const latestUserMessage = [...messages].reverse().find((message) => message.role === "user")?.content ?? "";
 
@@ -106,22 +150,8 @@ export async function generateSupportReply(messages: ChatMessage[]): Promise<Cha
     return buildCrisisResponse(latestUserMessage);
   }
 
-  const ai = getClient();
-  if (!ai) {
-    return buildFallbackResponse(latestUserMessage);
-  }
-
   try {
-    const transcript = messages.map((message) => `${message.role.toUpperCase()}: ${message.content}`).join("\n");
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `${SYSTEM_PROMPT}\n\nConversation:\n${transcript}\n\nRespond to the last USER message only.`,
-      config: {
-        temperature: 0.45
-      }
-    });
-
-    const text = response.text?.trim();
+    const text = await generateOpenAIReply(messages);
     if (!text) {
       return buildFallbackResponse(latestUserMessage);
     }
