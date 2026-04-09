@@ -283,3 +283,135 @@ textarea:focus {
     align-items: center;
   }
 }
+
+.dev-shell {
+  min-height: 100vh;
+  padding: 32px 16px;
+  background: linear-gradient(180deg, #f5f9ff 0%, #e8f2ff 100%);
+}
+
+.dev-card {
+  width: min(980px, 100%);
+  margin: 0 auto;
+  border-radius: 28px;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(126, 167, 214, 0.22);
+  box-shadow: 0 24px 54px rgba(102, 149, 199, 0.12);
+}
+
+.dev-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.dev-eyebrow {
+  margin: 0 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.dev-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  letter-spacing: -0.04em;
+}
+
+.dev-subtle,
+.dev-detail,
+.dev-empty-state,
+.dev-meta-grid,
+.dev-message-preview {
+  color: var(--muted);
+}
+
+.dev-subtle {
+  margin: 0;
+  max-width: 36ch;
+  line-height: 1.6;
+}
+
+.dev-log-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dev-log-card {
+  border-radius: 22px;
+  padding: 16px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(244, 249, 255, 0.9));
+  border: 1px solid rgba(126, 167, 214, 0.18);
+}
+
+.dev-log-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.dev-log-top strong {
+  margin-left: 10px;
+  text-transform: capitalize;
+}
+
+.dev-chip,
+.dev-risk {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: rgba(207, 230, 255, 0.7);
+  color: #3a6489;
+}
+
+.dev-risk.danger {
+  background: rgba(255, 232, 227, 0.9);
+  color: #a15d52;
+}
+
+.dev-message-preview {
+  margin: 12px 0;
+  line-height: 1.7;
+}
+
+.dev-meta-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 0.92rem;
+}
+
+.dev-detail {
+  margin: 12px 0 0;
+  font-size: 0.94rem;
+  line-height: 1.6;
+}
+
+.dev-empty-state {
+  margin: 0;
+  padding: 22px 0 8px;
+}
+
+@media (max-width: 640px) {
+  .dev-shell {
+    padding: 14px;
+  }
+
+  .dev-card {
+    padding: 16px;
+  }
+
+  .dev-header {
+    flex-direction: column;
+  }
+}

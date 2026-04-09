@@ -2,7 +2,10 @@
 node_modules
 data/simulation-state.json
 data/snapshots/*.json
+data/middleware-logs.json
 *.log
 .env*
 tsconfig.tsbuildinfo
 tsconfig.typecheck.tsbuildinfo
+__pycache__/
+*.pyc
