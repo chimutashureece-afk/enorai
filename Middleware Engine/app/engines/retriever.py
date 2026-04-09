@@ -1,20 +1,23 @@
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from app.knowledge.knowledge_base import documents
 
 
 class Retriever:
 
     def __init__(self):
-
         self.docs = documents
-        self.vectorizer = TfidfVectorizer()
-        self.vectors = self.vectorizer.fit_transform(self.docs)
 
     def retrieve(self, query):
+        query_terms = {term.strip(".,!?").lower() for term in query.split() if term.strip()}
 
-        query_vec = self.vectorizer.transform([query])
-        similarity = cosine_similarity(query_vec, self.vectors)
-        index = similarity.argmax()
+        best_doc = self.docs[0]
+        best_score = -1
 
-        return self.docs[index]
+        for doc in self.docs:
+            doc_terms = {term.strip(".,!?").lower() for term in doc.split() if term.strip()}
+            score = len(query_terms.intersection(doc_terms))
+
+            if score > best_score:
+                best_score = score
+                best_doc = doc
+
+        return best_doc
