@@ -1,2 +1,0 @@
-"""EnorAI backend package."""
-
